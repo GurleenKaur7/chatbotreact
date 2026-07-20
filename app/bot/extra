@@ -1,0 +1,1892 @@
+
+
+
+/*"use client";
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation"; // ✅ ALREADY PRESENT
+import "bootstrap/dist/css/bootstrap.min.css";
+
+export default function Bot() {
+  const [question, setQuestion] = useState("");
+  const [messages, setMessages] = useState([
+    { type: "bot", text: "Hey! How can I help you?" },
+  ]);
+  const [loading, setLoading] = useState(false);
+
+  const chatEndRef = useRef(null);
+  const router = useRouter(); // ✅ ADDITION: router for logout
+
+   // ✅ AUTHORIZATION CHECK
+ useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login"); // redirect if not logged in
+    }
+  }, [router]);
+
+
+
+
+
+
+ 
+
+
+  // Scroll to bottom whenever messages change
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // ✅ ADDITION: Logout handler
+  const handleLogout = () => {
+    // clear auth data if any
+    localStorage.removeItem("token");
+    router.push("/login"); // redirect to login page
+  };
+
+  const handleAsk = async () => {
+    if (!question.trim()) return;
+
+    setMessages((prev) => [...prev, { type: "user", text: question }]);
+    setLoading(true);
+
+    try {
+       const token = localStorage.getItem("token");
+      const res = await axios.post("http://192.168.86.36:8000/user/ask", { question }, { headers: { Authorization: `Bearer ${token}` } } );
+      if (res.data._status) {
+        setMessages((prev) => [
+          ...prev,
+          { type: "bot", text: res.data.answer },
+        ]);
+      }
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { type: "bot", text: "Backend error" },
+      ]);
+    } finally {
+      setLoading(false);
+      setQuestion("");
+    }
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleAsk();
+    }
+  };
+
+  return (
+    <div
+      className="d-flex flex-column min-vh-100 w-100 p-4"
+      style={{
+        background: "linear-gradient(135deg, #e9ecef, #f8f9fa)",
+      }}
+    >
+      
+      <nav className="navbar navbar-light bg-light mb-3 px-3">
+        
+        <div className="d-flex align-items-center">
+          <img
+            src="/chatgpt.png"
+            alt="Logo"
+            style={{ width: "40px", height: "40px", marginRight: "10px" }}
+          />
+          <h4 className="mb-0">ChatBot</h4>
+        </div>
+
+        
+        <div className="d-flex align-items-center gap-3">
+          
+          <div
+            className="d-flex align-items-center justify-content-center rounded-circle"
+            style={{
+              width: "40px",
+              height: "40px",
+              backgroundColor: "#0d6efd",
+              color: "#fff",
+              fontSize: "18px",
+              cursor: "pointer",
+            }}
+            title="Profile"
+          >
+            👤
+          </div>
+
+          
+          <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      <div
+        className="d-flex flex-column p-3 border rounded"
+        style={{
+          width: "100vw",
+          height: "80vh",
+          overflowY: "auto",
+          backgroundColor: "#ffffff",
+        }}
+      >
+        
+        <div
+          className="flex-grow-1 mb-3 p-3 border rounded"
+          style={{ overflowY: "auto", backgroundColor: "#ffffff" }}
+        >
+          {messages.map((msg, idx) => (
+            <div
+              key={idx}
+              className={`mb-2 ${
+                msg.type === "user" ? "text-end" : "text-start"
+              }`}
+            >
+              <span
+                className={`d-inline-block p-2 rounded ${
+                  msg.type === "user"
+                    ? "bg-primary text-white"
+                    : "bg-secondary text-white"
+                }`}
+              >
+                <strong>{msg.type === "user" ? "You: " : "Bot: "}</strong>
+                {msg.text}
+              </span>
+            </div>
+          ))}
+          <div ref={chatEndRef} />
+        </div>
+
+        
+        <div className="d-flex justify-content-center gap-2 mb-3">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Type your question..."
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            style={{ width: "80%", height: "50px" }}
+            onKeyDown={handleKeyDown}
+          />
+          <button
+            className="btn btn-primary"
+            onClick={handleAsk}
+            disabled={loading}
+            style={{ width: "10%", height: "50px" }}
+          >
+            {loading ? "..." : "Ask"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import "bootstrap/dist/css/bootstrap.min.css";
+
+export default function Bot() {
+  const [question, setQuestion] = useState("");
+  const [messages, setMessages] = useState([
+    { type: "bot", text: "Hey! How can I help you?" },
+  ]);
+  const [loading, setLoading] = useState(false);
+
+  // ✅ ADDITION: Profile image states
+  const [profileFile, setProfileFile] = useState(null);
+  const [profilePreview, setProfilePreview] = useState(null);
+
+  const chatEndRef = useRef(null);
+  const fileInputRef = useRef(null); // ✅ ADDITION: file input ref
+  const router = useRouter();
+
+  // ✅ AUTHORIZATION CHECK
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+    }
+    else {
+      
+      fetchProfileImage(); // ✅ NEW: fetch profile image from backend
+    }
+    
+  }, [router]);
+
+  // Scroll to bottom whenever messages change
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+
+//
+
+
+// ✅ FETCH PROFILE IMAGE
+  const fetchProfileImage = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://192.168.86.36:8000/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data.profileImage) {
+        setProfilePreview(res.data.profileImage);
+      }
+    } catch (err) {
+      console.error("Failed to fetch profile image", err);
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+  // ✅ ADDITION: Profile image handlers
+  const handleProfileClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfileFile(file);
+      setProfilePreview(URL.createObjectURL(file));
+      handleUploadProfile(file);
+    }
+  };
+
+  const handleUploadProfile = async (file) => {
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      await axios.post("http://192.168.86.36:8000/user/image", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log("Profile uploaded successfully");
+    } catch (err) {
+      console.error("Profile upload failed", err);
+    }
+  };
+
+  // Logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/login");
+  };
+
+  // Send question
+  const handleAsk = async () => {
+    if (!question.trim()) return;
+    setMessages((prev) => [...prev, { type: "user", text: question }]);
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        "http://192.168.86.36:8000/user/ask",
+        { question },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data._status) {
+        setMessages((prev) => [...prev, { type: "bot", text: res.data.answer }]);
+      }
+    } catch {
+      setMessages((prev) => [...prev, { type: "bot", text: "Backend error" }]);
+    } finally {
+      setLoading(false);
+      setQuestion("");
+    }
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleAsk();
+    }
+  };
+
+  return (
+    <div
+      className="d-flex flex-column min-vh-100 w-100 p-4"
+      style={{ background: "linear-gradient(135deg, #e9ecef, #f8f9fa)" }}
+    >
+      
+      <nav className="navbar navbar-light bg-light mb-3 px-3">
+        <div className="d-flex align-items-center">
+          <img
+            src="/chatgpt.png"
+            alt="Logo"
+            style={{ width: "40px", height: "40px", marginRight: "10px" }}
+          />
+          <h4 className="mb-0">ChatBot</h4>
+        </div>
+
+        
+        <div className="d-flex align-items-center gap-3">
+          
+          <div
+            onClick={handleProfileClick} // ✅ CLICK TO UPLOAD
+            className="d-flex align-items-center justify-content-center rounded-circle"
+            style={{
+              width: "40px",
+              height: "40px",
+              backgroundColor: "#0d6efd",
+              color: "#fff",
+              fontSize: "18px",
+              cursor: "pointer",
+              overflow: "hidden",
+            }}
+            title="Profile"
+          >
+            {profilePreview ? (
+              <img
+                src={profilePreview}
+                alt="Profile"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              "👤"
+            )}
+          </div>
+
+          
+          <input
+            type="file"
+            ref={fileInputRef} // ✅ CONNECTED TO PROFILE CLICK
+            style={{ display: "none" }}
+            onChange={handleFileChange}
+            accept="image/*"
+          />
+
+          
+          <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      
+      <div
+        className="d-flex flex-column p-3 border rounded"
+        style={{
+          width: "100vw",
+          height: "80vh",
+          overflowY: "auto",
+          backgroundColor: "#ffffff",
+        }}
+      >
+        <div
+          className="flex-grow-1 mb-3 p-3 border rounded"
+          style={{ overflowY: "auto", backgroundColor: "#ffffff" }}
+        >
+          {messages.map((msg, idx) => (
+            <div
+              key={idx}
+              className={`mb-2 ${msg.type === "user" ? "text-end" : "text-start"}`}
+            >
+              <span
+                className={`d-inline-block p-2 rounded ${
+                  msg.type === "user" ? "bg-primary text-white" : "bg-secondary text-white"
+                }`}
+              >
+                <strong>{msg.type === "user" ? "You: " : "Bot: "}</strong>
+                {msg.text}
+              </span>
+            </div>
+          ))}
+          <div ref={chatEndRef} />
+        </div>
+
+        
+        <div className="d-flex justify-content-center gap-2 mb-3">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Type your question..."
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            style={{ width: "80%", height: "50px" }}
+            onKeyDown={handleKeyDown}
+          />
+          <button
+            className="btn btn-primary"
+            onClick={handleAsk}
+            disabled={loading}
+            style={{ width: "10%", height: "50px" }}
+          >
+            {loading ? "..." : "Ask"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}*/
+
+
+
+
+
+
+
+
+
+
+//latest
+/*"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import "bootstrap/dist/css/bootstrap.min.css";
+
+const BASE_URL = "http://192.168.86.25:8000";
+
+export default function Bot() {
+  const [question, setQuestion] = useState("");
+  const [messages, setMessages] = useState([
+    { type: "bot", text: "Hey! How can I help you?" },
+  ]);
+  const [loading, setLoading] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
+//new
+
+  const chatEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const router = useRouter();
+
+  
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    fetchProfileImage(token);
+  }, [router]);
+
+  
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  
+  const fetchProfileImage = async (token) => {
+    if (!token) return;
+
+    try {
+      const res = await axios.get(`${BASE_URL}/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.data.profileImage) {
+        setProfileImage(res.data.profileImage); // persist after reload
+      }
+    } catch (err) {
+      console.error("Failed to fetch profile image:", err);
+    }
+  };
+
+  
+  const handleProfileClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // 1️⃣ Instant preview using Object URL
+  const tempUrl = URL.createObjectURL(file);
+  setProfileImage(tempUrl);
+
+  // 2️⃣ Upload to backend
+  const token = localStorage.getItem("token");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await axios.post(`${BASE_URL}/user/image`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    
+    if (res.data.profileImage) {
+      
+      setProfileImage(`${res.data.profileImage}?t=${Date.now()}`);
+    }
+
+    alert("Profile image uploaded successfully!");
+  } catch (err) {
+    console.error("Profile upload failed:", err);
+  }
+};
+  
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/login");
+  };
+
+  const handleAsk = async () => {
+    if (!question.trim()) return;
+
+    setMessages((prev) => [...prev, { type: "user", text: question }]);
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.post(
+        `${BASE_URL}/user/ask`,
+        { question },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.data._status) {
+        setMessages((prev) => [...prev, { type: "bot", text: res.data.answer }]);
+      } else {
+        setMessages((prev) => [...prev, { type: "bot", text: "Something went wrong" }]);
+      }
+    } catch (err) {
+      setMessages((prev) => [...prev, { type: "bot", text: "Backend error" }]);
+    } finally {
+      setLoading(false);
+      setQuestion("");
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAsk();
+    }
+  };
+
+  
+  return (
+    <div
+  className="d-flex flex-column min-vh-100 w-100 p-4"
+  style={{ background: "linear-gradient(135deg,#e9ecef,#f8f9fa)" }}
+>
+  
+  <nav className="navbar navbar-light bg-light mb-3 px-3">
+    <div className="d-flex align-items-center">
+      <img
+        src="/chatgpt.png"
+        alt="Logo"
+        style={{ width: 40, height: 40, marginRight: 10 }}
+      />
+      <h4 className="mb-0">ChatBot</h4>
+    </div>
+
+    <div className="d-flex align-items-center gap-3">
+      
+      <div
+        onClick={handleProfileClick}
+        className="d-flex align-items-center justify-content-center rounded-circle"
+        style={{
+          width: 40,
+          height: 40,
+          backgroundColor: "#0d6efd",
+          color: "#fff",
+          cursor: "pointer",
+          overflow: "hidden",
+        }}
+      >
+        {profileImage ? (
+          <img
+            src={profileImage}
+            alt="Profile"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          "👤"
+        )}
+      </div>
+
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        accept="image/*"
+        onChange={handleFileChange}
+      />
+
+      
+      <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
+        Logout
+      </button>
+    </div>
+  </nav>
+
+  
+  <div
+    className="flex-grow-1 border rounded bg-white d-flex flex-column p-3"
+    style={{ overflow: "hidden" }}
+  >
+    
+    <div className="flex-grow-1 overflow-auto mb-3">
+      {messages.map((msg, i) => (
+        <div
+          key={i}
+          className={`mb-2 ${msg.type === "user" ? "text-end" : "text-start"}`}
+        >
+          <span
+            className={`d-inline-block p-2 rounded ${
+              msg.type === "user" ? "bg-primary text-white" : "bg-secondary text-white"
+            }`}
+          >
+            <strong>{msg.type === "user" ? "You: " : "Bot: "}</strong>
+            {msg.text}
+          </span>
+        </div>
+      ))}
+      <div ref={chatEndRef} />
+    </div>
+
+    
+    <div className="d-flex flex-column gap-2">
+      <label htmlFor="questionInput" className="fw-bold">
+         
+      </label>
+      <div className="d-flex gap-2">
+        <input
+          id="questionInput"
+          className="form-control"
+          placeholder="Type your question..."
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <button
+          className="btn btn-primary"
+          onClick={handleAsk}
+          disabled={loading}
+        >
+          {loading ? "..." : "Ask"}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  );
+}*/
+
+
+
+/*"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import "bootstrap/dist/css/bootstrap.min.css";
+
+const BASE_URL = "http://192.168.86.25:8000";
+
+export default function Bot() {
+  const [question, setQuestion] = useState("");
+  const [messages, setMessages] = useState([
+    { type: "bot", text: "Hey! How can I help you?" },
+  ]);
+  const [loading, setLoading] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
+  const [recentHistory, setRecentHistory] = useState([]);
+  
+
+  const chatEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    fetchProfileImage(token);
+    fetchRecentQuestions(token);
+  }, [router]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const fetchProfileImage = async (token) => {
+    if (!token) return;
+    try {
+      const res = await axios.get(`${BASE_URL}/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data.profileImage) setProfileImage(res.data.profileImage);
+    } catch (err) {
+      console.error("Failed to fetch profile image:", err);
+    }
+  };
+
+  const fetchRecentQuestions = async (token) => {
+    if (!token) return;
+    try {
+      const res = await axios.get(`${BASE_URL}/user/recentQuestions`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data.questions) setRecentHistory(res.data.questions);
+    } catch (err) {
+      console.error("Failed to fetch recent questions:", err);
+    }
+  };
+
+  const handleProfileClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setProfileImage(URL.createObjectURL(file));
+
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await axios.post(`${BASE_URL}/user/image`, formData, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+      });
+      if (res.data.profileImage) setProfileImage(`${res.data.profileImage}?t=${Date.now()}`);
+      alert("Profile image uploaded successfully!");
+    } catch (err) {
+      console.error("Profile upload failed:", err);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/login");
+  };
+
+  const handleAsk = async () => {
+    if (!question.trim()) return;
+
+    setMessages((prev) => [...prev, { type: "user", text: question }]);
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.post(
+        `${BASE_URL}/user/ask`,
+        { question },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.data._status) {
+        setMessages((prev) => [...prev, { type: "bot", text: res.data.answer }]);
+      } else {
+        setMessages((prev) => [...prev, { type: "bot", text: "Something went wrong" }]);
+      }
+
+      // Save question & update history
+      await axios.post(
+        `${BASE_URL}/user/saveQuestion`,
+        { question },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      fetchRecentQuestions(token);
+    } catch (err) {
+      setMessages((prev) => [...prev, { type: "bot", text: "Backend error" }]);
+    } finally {
+      setLoading(false);
+      setQuestion("");
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAsk();
+    }
+  };
+
+  return (
+  <div
+      className="d-flex flex-column min-vh-100 w-100 p-4"
+      style={{ background: "linear-gradient(135deg,#e9ecef,#f8f9fa)" }}
+    >
+      
+      <nav className="navbar navbar-light bg-light mb-3 px-3">
+        <div className="d-flex align-items-center">
+          <img
+            src="/chatgpt.png"
+            alt="Logo"
+            style={{ width: 40, height: 40, marginRight: 10 }}
+          />
+          <h4 className="mb-0">ChatBot</h4>
+        </div>
+        <div className="d-flex align-items-center gap-3">
+          <div
+            onClick={handleProfileClick}
+            className="d-flex align-items-center justify-content-center rounded-circle"
+            style={{
+              width: 40,
+              height: 40,
+              backgroundColor: "#0d6efd",
+              color: "#fff",
+              cursor: "pointer",
+              overflow: "hidden",
+            }}
+          >
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt="Profile"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              "👤"
+            )}
+          </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+          <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      
+      <div className="d-flex flex-grow-1 border rounded bg-white p-3" style={{ overflow: "hidden",flex:"1 1 0",minHeight:0 }}>
+        
+        <div className="border-end pe-2" style={{ width: "25%", overflowY: "auto" }}>
+          <h6>Recent Questions</h6>
+          {recentHistory.length === 0 && <small>No questions yet.</small>}
+          {recentHistory.map((q, idx) => (
+            <div key={idx} className="p-1 mb-1 bg-light rounded" style={{ fontSize: "0.85rem" }}>
+              {q}
+            </div>
+          ))}
+        </div>
+
+        
+        <div className="d-flex flex-column flex-grow-1 ps-3" >
+          <div className="flex-grow-1 overflow-auto mb-3" style={{ maxHeight: "100%" }}>
+            {messages.map((msg, i) => (
+              <div key={i} className={`mb-2 ${msg.type === "user" ? "text-end" : "text-start"}`}>
+                <span className={`d-inline-block p-2 rounded ${msg.type === "user" ? "bg-primary text-white" : "bg-secondary text-white"}`}>
+                  <strong>{msg.type === "user" ? "You: " : "Bot: "}</strong>
+                  {msg.text}
+                </span>
+              </div>
+            ))}
+            <div ref={chatEndRef} />
+          </div>
+
+          <div className="d-flex gap-2">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Type your question..."
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <button className="btn btn-primary" onClick={handleAsk} disabled={loading}>
+              {loading ? "..." : "Ask"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  );
+}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import "bootstrap/dist/css/bootstrap.min.css";
+
+const BASE_URL = "http://192.168.86.25:8000";
+
+export default function Bot() {
+  const [question, setQuestion] = useState("");
+  const [messages, setMessages] = useState([
+    { type: "bot", text: "Hey! How can I help you?" },
+  ]);
+  const [loading, setLoading] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
+  const [recentHistory, setRecentHistory] = useState([]);
+  //const [hideHistory,setHideHistory]=useState(false);
+
+  // -------------------- ADDITION: selectedHistory --------------------
+  const [selectedHistory, setSelectedHistory] = useState(null);
+  // -------------------------------------------------------------------
+
+  const chatEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    fetchProfileImage(token);
+    fetchRecentQuestions(token);
+  }, [router]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const fetchProfileImage = async (token) => {
+    if (!token) return;
+    try {
+      const res = await axios.get(`${BASE_URL}/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data.profileImage) setProfileImage(res.data.profileImage);
+    } catch (err) {
+      console.error("Failed to fetch profile image:", err);
+    }
+  };
+
+  const fetchRecentQuestions = async (token) => {
+    if (!token) return;
+    try {
+      const res = await axios.get(`${BASE_URL}/user/recentQuestions`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data.questions) setRecentHistory(res.data.questions);
+    } catch (err) {
+      console.error("Failed to fetch recent questions:", err);
+    }
+  };
+
+  const handleProfileClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setProfileImage(URL.createObjectURL(file));
+
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await axios.post(`${BASE_URL}/user/image`, formData, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+      });
+      if (res.data.profileImage) setProfileImage(`${res.data.profileImage}?t=${Date.now()}`);
+      alert("Profile image uploaded successfully!");
+    } catch (err) {
+      console.error("Profile upload failed:", err);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/login");
+  };
+
+  const handleAsk = async (askQuestion = null) => {
+    const finalQuestion = askQuestion || question;
+    if (!finalQuestion.trim()) return;
+
+    setMessages((prev) => [...prev, { type: "user", text: finalQuestion }]);
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.post(
+        `${BASE_URL}/user/ask`,
+        { question: finalQuestion },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      //
+
+      if (res.data._status) {
+        setMessages((prev) => [...prev, { type: "bot", text: res.data.answer }]);
+      } else {
+        setMessages((prev) => [...prev, { type: "bot", text: "Something went wrong" }]);
+      }
+
+      // Save question & update history only if it's a new question
+      if (!askQuestion) {
+        await axios.post(
+          `${BASE_URL}/user/saveQuestion`,
+          { question: finalQuestion },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        fetchRecentQuestions(token);
+        //setRecentHistory([finalQuestion]);
+      }
+    } catch (err) {
+      setMessages((prev) => [...prev, { type: "bot", text: "Backend error" }]);
+    } finally {
+      setLoading(false);
+      if (!askQuestion) setQuestion("");
+      setSelectedHistory(null); // -------------------- ADDITION --------------------
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAsk();
+    }
+  };
+
+  // -------------------- ADDITION: effect to trigger ask when selectedHistory changes --------------------
+  useEffect(() => {
+    if (!selectedHistory) return;
+    handleAsk(selectedHistory);
+  }, [selectedHistory]);
+  // -------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+const handleDeleteHistory = async (questionToDelete) => {
+  try {
+    const token = localStorage.getItem("token");
+    // Remove from backend
+    await axios.post(
+      `${BASE_URL}/user/deleteQuestion`,
+      { question: questionToDelete },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    // Remove from frontend
+    setRecentHistory(prev => prev.filter(q => q !== questionToDelete));
+  } catch (err) {
+    console.error("Failed to delete question:", err);
+  }
+};
+
+//new today
+
+
+
+
+
+
+  return (
+    <div
+      className="d-flex flex-column min-vh-100 w-100 p-4"
+      style={{ background: "linear-gradient(135deg,#e9ecef,#f8f9fa)" }}
+    >
+      <nav className="navbar navbar-light bg-light mb-3 px-3">
+        <div className="d-flex align-items-center">
+          <img src="/chatgpt.png" alt="Logo" style={{ width: 40, height: 40, marginRight: 10 }} />
+          <h4 className="mb-0">ChatBot</h4>
+        </div>
+        <div className="d-flex align-items-center gap-3">
+          <div
+            onClick={handleProfileClick}
+            className="d-flex align-items-center justify-content-center rounded-circle"
+            style={{
+              width: 40,
+              height: 40,
+              backgroundColor: "#0d6efd",
+              color: "#fff",
+              cursor: "pointer",
+              overflow: "hidden",
+            }}
+          >
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt="Profile"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              "👤"
+            )}
+          </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+          <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      <div className="d-flex flex-grow-1 border rounded bg-white p-3" style={{ overflow: "hidden", flex: "1 1 0", minHeight: 0 }}>
+        <div className="border-end pe-2" style={{ width: "25%", overflowY: "auto" }}>
+         
+         
+         
+          <h6 className="mb-0">Recent Questions</h6>
+        
+        
+        
+          {recentHistory.length === 0 && <small>No questions yet.</small>}
+          {recentHistory.map((q, idx) => (
+            <div
+              key={idx}
+              className="p-1 mb-1 bg-light rounded d-flex align-items-center justify-content-between"
+              style={{ fontSize: "0.85rem", cursor: "pointer" }}
+              // -------------------- ADDITION: set selected history on click --------------------
+              onClick={() => setSelectedHistory(q)}
+            >
+             <span>{q}</span>
+
+
+<span
+      style={{ color: "red", cursor: "pointer", marginLeft: "10px" }}
+      onClick={(e) => {
+        e.stopPropagation(); // prevent triggering setSelectedHistory
+        handleDeleteHistory(q); // delete question
+      }}
+    >
+      ✖
+    </span>
+
+
+
+            </div>
+          ))}
+        </div>
+
+        <div className="d-flex flex-column flex-grow-1 ps-3">
+          <div className="flex-grow-1 overflow-auto mb-3" style={{ maxHeight: "100%" }}>
+            {messages.map((msg, i) => (
+              <div key={i} className={`mb-2 ${msg.type === "user" ? "text-end" : "text-start"}`}>
+                <span
+                  className={`d-inline-block p-2 rounded ${
+                    msg.type === "user" ? "bg-primary text-white" : "bg-secondary text-white"
+                  }`}
+                >
+                  <strong>{msg.type === "user" ? "You: " : "Bot: "}</strong>
+                  {msg.text}
+                </span>
+              </div>
+            ))}
+            <div ref={chatEndRef} />
+          </div>
+
+          <div className="d-flex gap-2">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Type your question..."
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <button className="btn btn-primary" onClick={() => handleAsk()} disabled={loading}>
+              {loading ? "..." : "Ask"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import "bootstrap/dist/css/bootstrap.min.css";
+
+const BASE_URL = "http://192.168.86.25:8000";
+
+export default function Bot() {
+  const [question, setQuestion] = useState("");
+  const [messages, setMessages] = useState([{ type: "bot", text: "Hey! How can I help you?" }]);
+  const [loading, setLoading] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
+  const [sessions, setSessions] = useState([]); // chat sessions
+  const [currentSessionId, setCurrentSessionId] = useState(null); // current chat id
+
+  const chatEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const router = useRouter();
+
+  // Load user profile and sessions on mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return router.push("/login");
+
+    fetchProfile(token);
+    fetchSessions(token);
+  }, []);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // ---------------- Profile ----------------
+  const fetchProfile = async (token) => {
+    try {
+      const res = await axios.get(`${BASE_URL}/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data.profileImage) setProfileImage(res.data.profileImage);
+    } catch (err) {
+      console.error("Profile fetch failed:", err);
+    }
+  };
+
+  const handleProfileClick = () => fileInputRef.current.click();
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setProfileImage(URL.createObjectURL(file));
+
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await axios.post(`${BASE_URL}/user/image`, formData, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+      });
+      if (res.data.url) setProfileImage(`${res.data.url}?t=${Date.now()}`);
+    } catch (err) {
+      console.error("Profile upload failed:", err);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/login");
+  };
+
+  // ---------------- Sessions ----------------
+  const fetchSessions = async (token) => {
+    try {
+      const res = await axios.get(`${BASE_URL}/user/chatSessions`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSessions(res.data);
+    } catch (err) {
+      console.error("Failed to fetch sessions:", err);
+    }
+  };
+
+  const loadSession = async (sessionId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${BASE_URL}/user/chatSession/${sessionId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMessages(res.data.messages || []);
+      setCurrentSessionId(res.data.id);
+    } catch (err) {
+      console.error("Failed to load session:", err);
+    }
+  };
+
+  const saveSession = async (msgs) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        `${BASE_URL}/user/saveChatSession`,
+        { id: currentSessionId, messages: msgs },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!currentSessionId) setCurrentSessionId(res.data.session_id);
+      fetchSessions(token); // refresh sidebar
+    } catch (err) {
+      console.error("Failed to save session:", err);
+    }
+  };
+
+  // ---------------- Chat ----------------
+  const handleAsk = async () => {
+    if (!question.trim()) return;
+
+    const newMessages = [...messages, { type: "user", text: question }];
+    setMessages(newMessages);
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        `${BASE_URL}/user/ask`,
+        { question },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.data._status) {
+        const updatedMessages = [...newMessages, { type: "bot", text: res.data.answer }];
+        setMessages(updatedMessages);
+        saveSession(updatedMessages); // save to backend
+      } else {
+        setMessages((prev) => [...prev, { type: "bot", text: "Something went wrong" }]);
+      }
+    } catch (err) {
+      setMessages((prev) => [...prev, { type: "bot", text: "Backend error" }]);
+    } finally {
+      setLoading(false);
+      setQuestion("");
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAsk();
+    }
+  };
+
+  return (
+    <div className="d-flex flex-column min-vh-100 w-100 p-4" style={{ background: "linear-gradient(135deg,#e9ecef,#f8f9fa)" }}>
+      <nav className="navbar navbar-light bg-light mb-3 px-3">
+        <div className="d-flex align-items-center">
+          <img src="/chatgpt.png" alt="Logo" style={{ width: 40, height: 40, marginRight: 10 }} />
+          <h4 className="mb-0">ChatBot</h4>
+        </div>
+        <div className="d-flex align-items-center gap-3">
+          <div
+            onClick={handleProfileClick}
+            className="d-flex align-items-center justify-content-center rounded-circle"
+            style={{ width: 40, height: 40, backgroundColor: "#0d6efd", color: "#fff", cursor: "pointer", overflow: "hidden" }}
+          >
+            {profileImage ? <img src={profileImage} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "👤"}
+          </div>
+          <input type="file" ref={fileInputRef} style={{ display: "none" }} accept="image/*" onChange={handleFileChange} />
+          <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>Logout</button>
+        </div>
+      </nav>
+
+      <div className="d-flex flex-grow-1 border rounded bg-white p-3" style={{ overflow: "hidden", flex: "1 1 0", minHeight: 0 }}>
+        
+        <div className="border-end pe-2" style={{ width: "25%", overflowY: "auto" }}>
+          <h6 className="mb-2">Chat Sessions</h6>
+          {sessions.length === 0 && <small>No chats yet.</small>}
+          {sessions.map((s) => (
+            <div
+              key={s.id}
+              className="p-1 mb-1 bg-light rounded"
+              style={{ cursor: "pointer" }}
+              onClick={() => loadSession(s.id)}
+            >
+              {s.title}
+            </div>
+          ))}
+        </div>
+
+      
+        <div className="d-flex flex-column flex-grow-1 ps-3">
+          <div className="flex-grow-1 overflow-auto mb-3" style={{ maxHeight: "100%" }}>
+            {messages.map((msg, i) => (
+              <div key={i} className={`mb-2 ${msg.type === "user" ? "text-end" : "text-start"}`}>
+                <span className={`d-inline-block p-2 rounded ${msg.type === "user" ? "bg-primary text-white" : "bg-secondary text-white"}`}>
+                  <strong>{msg.type === "user" ? "You: " : "Bot: "}</strong>{msg.text}
+                </span>
+              </div>
+            ))}
+            <div ref={chatEndRef} />
+          </div>
+
+          <div className="d-flex gap-2">
+            <input type="text" className="form-control" placeholder="Type your question..." value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={handleKeyDown} />
+            <button className="btn btn-primary" onClick={handleAsk} disabled={loading}>{loading ? "..." : "Ask"}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import "bootstrap/dist/css/bootstrap.min.css";
+
+const BASE_URL = "http://192.168.86.25:8000";
+
+export default function Bot() {
+  const [question, setQuestion] = useState("");
+  const [messages, setMessages] = useState([
+    { type: "bot", text: "Hey! How can I help you?" },
+  ]);
+  const [loading, setLoading] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
+  const [recentHistory, setRecentHistory] = useState([]);
+  const [selectedHistory, setSelectedHistory] = useState(null);
+  const [userInfo, setUserInfo] = useState({
+  username: "",
+  email: "",
+});
+
+
+  const chatEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+    fetchProfileImage(token);
+    fetchRecentQuestions(token);
+  }, [router]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const fetchProfileImage = async (token) => {
+    try {
+      const res = await axios.get(`${BASE_URL}/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if 
+      
+      
+      (res.data.profileImage){
+      
+      setProfileImage(res.data.profileImage);
+      }
+
+
+
+      setUserInfo({
+      username: res.data.username || "",
+      email: res.data.email || "",
+    });
+      
+    } catch (err) {
+      console.error("Failed to fetch profile image:", err);
+    }
+  };
+
+  const fetchRecentQuestions = async (token) => {
+    try {
+      const res = await axios.get(`${BASE_URL}/user/recentQuestions`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data.questions) setRecentHistory(res.data.questions);
+    } catch (err) {
+      console.error("Failed to fetch recent questions:", err);
+    }
+  };
+
+  const handleProfileClick = () => fileInputRef.current.click();
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setProfileImage(URL.createObjectURL(file));
+
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await axios.post(`${BASE_URL}/user/image`, formData, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+      });
+      if (res.data.profileImage)
+        setProfileImage(`${res.data.profileImage}?t=${Date.now()}`);
+      alert("Profile image uploaded successfully!");
+    } catch (err) {
+      console.error("Profile upload failed:", err);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/login");
+  };
+
+  const handleAsk = async (askQuestion = null) => {
+    const finalQuestion = askQuestion || question;
+    if (!finalQuestion.trim()) return;
+
+    setMessages((prev) => [...prev, { type: "user", text: finalQuestion }]);
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.post(
+        `${BASE_URL}/user/ask`,
+        { question: finalQuestion },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.data._status) {
+        setMessages((prev) => [...prev, { type: "bot", text: res.data.answer }]);
+      } else {
+        setMessages((prev) => [...prev, { type: "bot", text: "Something went wrong" }]);
+      }
+
+      // Save question to backend if it's new
+      if (!askQuestion) {
+        await axios.post(
+          `${BASE_URL}/user/saveQuestion`,
+          { question: finalQuestion },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        fetchRecentQuestions(token);
+      }
+
+    } catch (err) {
+      setMessages((prev) => [...prev, { type: "bot", text: "Backend error" }]);
+    } finally {
+      setLoading(false);
+      if (!askQuestion) setQuestion("");
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAsk();
+    }
+  };
+
+  const handleDeleteHistory = async (questionToDelete) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${BASE_URL}/user/deleteQuestion`,
+        { question: questionToDelete },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setRecentHistory((prev) => prev.filter((q) => q !== questionToDelete));
+    } catch (err) {
+      console.error("Failed to delete question:", err);
+    }
+  };
+
+  // Load full chat for a selected history
+  const handleSelectHistory = async (question) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get(`${BASE_URL}/user/sessionMessages`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { question },
+      });
+
+      if (res.data.messages && res.data.messages.length > 0) {
+        setMessages((prev) => [...prev, ...res.data.messages]);
+      } else {
+        setMessages([{ type: "bot", text: "No conversation found" }]);
+      }
+
+      setSelectedHistory(question);
+    } catch (err) {
+      console.error("Failed to load session:", err);
+    }
+  };
+
+
+
+
+const handleNewChat = () => {
+  setMessages([{ type: "bot", text: "Hey! How can I help you?" }]);
+  setSelectedHistory(null); // reset selected history
+};
+
+
+
+  return (
+    <div className="d-flex flex-column min-vh-100 w-100 p-4" style={{ background: "linear-gradient(135deg,#e9ecef,#f8f9fa)" }}>
+      <nav className="navbar navbar-light bg-light mb-3 px-3">
+        <div className="d-flex align-items-center">
+          <img src="/chatgpt.png" alt="Logo" style={{ width: 40, height: 40, marginRight: 10 }} />
+          <h4 className="mb-0">ChatBot</h4>
+
+         
+        </div>
+        <div className="d-flex align-items-center gap-3">
+          <div
+            onClick={handleProfileClick}
+            className="d-flex align-items-center justify-content-center rounded-circle"
+            style={{
+              width: 40,
+              height: 40,
+              backgroundColor: "#0d6efd",
+              color: "#fff",
+              cursor: "pointer",
+              overflow: "hidden",
+            }}
+          >
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt="Profile"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              "👤"
+            )}
+          </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+          <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      <div className="d-flex flex-grow-1 border rounded bg-white p-3" style={{ overflow: "hidden", flex: "1 1 0", minHeight: 0 }}>
+        <div className="border-end pe-2" style={{ width: "25%", overflowY: "auto",minWidth:"300px" }}>
+          <div className="d-flex justify-content-between align-items-center mb-2">
+          
+          <h6 className="mb-2">Recent Questions</h6>
+          
+          <button className="btn btn-sm btn-outline-success" onClick={handleNewChat}>
+      New Chat
+    </button>
+    </div>
+          <div className="flex-grow-1 overflow-auto">
+          {recentHistory.length === 0 && <small>No questions yet.</small>}
+          {recentHistory.map((q, idx) => (
+            <div
+              key={idx}
+              className="p-1 mb-1 bg-light rounded d-flex align-items-center justify-content-between"
+              style={{ fontSize: "0.85rem", cursor: "pointer" }}
+              onClick={() => handleSelectHistory(q)}
+            >
+              <span>{q}</span>
+              <span
+                style={{ color: "red", cursor: "pointer", marginLeft: "10px" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteHistory(q);
+                }}
+              >
+                ✖
+              </span>
+            </div>
+          ))}
+        </div>
+
+
+
+
+  <div
+    className="pt-2 mt-2 border-top text-muted"
+    style={{ fontSize: "0.8rem" }}
+  >
+    <div><strong>User:</strong> {userInfo.username}</div>
+    <div><strong>Email:</strong> {userInfo.email}</div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+        <div className="d-flex flex-column flex-grow-1 ps-3" style={{minHeight:"200px"}}>
+          <div className="flex-grow-1 overflow-auto mb-3" style={{ minHeight:"200px"}}>
+            {messages.map((msg, i) => (
+              <div key={i} className={`mb-2 ${msg.type === "user" ? "text-end" : "text-start"}`}>
+                <span className={`d-inline-block p-2 rounded ${msg.type === "user" ? "bg-primary text-white" : "bg-secondary text-white"}`}>
+                  <strong>{msg.type === "user" ? "You: " : "Bot: "}</strong>
+                  {msg.text}
+                </span>
+              </div>
+            ))}
+            <div ref={chatEndRef} />
+          </div>
+
+          <div className="d-flex gap-2">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Type your question..."
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <button className="btn btn-primary" onClick={() => handleAsk()} disabled={loading}>
+              {loading ? "..." : "Ask"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

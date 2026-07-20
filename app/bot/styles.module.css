@@ -1,0 +1,11 @@
+
+.sessionItem {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.sessionItem:hover {
+  background-color: #0d6efd; /* Bootstrap primary color */
+  color: white;
+  transform: scale(1.02);
+}
